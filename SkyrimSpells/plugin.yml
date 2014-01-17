@@ -2,3 +2,6 @@ name: SkyrimSpells
 main: net.mcshockwave.Spells.SpellsSkyrim
 version: 1.0
 author: Blaxcraft
+commands:
+   spell:
+      aliases: [skyrimspells, sksp]
