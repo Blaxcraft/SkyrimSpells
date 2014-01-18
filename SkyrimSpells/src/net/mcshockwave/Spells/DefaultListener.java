@@ -20,9 +20,9 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class DefaultListener implements Listener {
 
-	public HashMap<Location, BukkitTask>	rune	= new HashMap<>();
-	public HashMap<Player, BukkitTask>	cloak	= new HashMap<>();
-	public HashMap<Player, BukkitTask>	cloakDis	= new HashMap<>();
+	public HashMap<Location, BukkitTask>	rune		= new HashMap<>();
+	public HashMap<Player, BukkitTask>		cloak		= new HashMap<>();
+	public HashMap<Player, BukkitTask>		cloakDis	= new HashMap<>();
 
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
@@ -33,73 +33,78 @@ public class DefaultListener implements Listener {
 		if (a.name().contains("RIGHT_CLICK")) {
 			event.setCancelled(true);
 
-			for (Spell s : Spell.values()) {
-				if (s.item.isSimilar(it)) {
-					if (s.type == SpellType.Spray) {
-						final Spell s2 = s;
+			for (Spell s2 : Spell.values()) {
+				if (s2.item.isSimilar(it)) {
+					final Spell s = s2;
+					Bukkit.getScheduler().runTaskLater(SpellsSkyrim.ins, new Runnable() {
+						public void run() {
+							if (s.type == SpellType.Spray) {
+								final Spell s2 = s;
 
-						for (int i = 0; i < 4; i++) {
-							new BukkitRunnable() {
-								public void run() {
-									s2.cast(p);
-								}
-							}.runTaskLater(SpellsSkyrim.ins, i * 4);
-						}
-					} else if (s.type == SpellType.Bolt) {
-						s.cast(p);
-					} else if (s.type == SpellType.Rune) {
-						@SuppressWarnings("deprecation")
-						Block b = p.getTargetBlock(null, 8);
-
-						final Location l = b.getLocation();
-						if (!b.getType().isTransparent() && !rune.containsKey(l)) {
-							final Spell s2 = s;
-							rune.put(l, new BukkitRunnable() {
-								public void run() {
-									s2.onRuneUpdate(p, l);
-									boolean hit = false;
-									for (Entity e : l.getWorld().getEntities()) {
-										if (!(e instanceof LivingEntity))
-											continue;
-
-										LivingEntity le = (LivingEntity) e;
-										if (le != p && le.getLocation().distance(l) <= 4) {
-											if (!hit) {
-												s2.onRuneExplode(p, l);
-												hit = true;
-											}
-											s2.onRuneHitEntity(p, le);
-											rune.get(l).cancel();
-											rune.remove(l);
+								for (int i = 0; i < 4; i++) {
+									new BukkitRunnable() {
+										public void run() {
+											s2.cast(p);
 										}
-									}
+									}.runTaskLater(SpellsSkyrim.ins, i * 4);
 								}
-							}.runTaskTimer(SpellsSkyrim.ins, 0, 10));
-						} else
-							p.sendMessage("§cCould not place rune at target");
-					} else if (s.type == SpellType.Cloak) {
-						if (cloak.containsKey(p)) {
-							cloak.get(p).cancel();
-							cloak.remove(p);
-						}
-						if (cloakDis.containsKey(p)) {
-							cloakDis.get(p).cancel();
-							cloakDis.remove(p);
-						}
-						final Spell s2 = s;
-						cloak.put(p, new BukkitRunnable() {
-							public void run() {
-								s2.onCloakUpdate(p);
+							} else if (s.type == SpellType.Bolt) {
+								s.cast(p);
+							} else if (s.type == SpellType.Rune) {
+								@SuppressWarnings("deprecation")
+								Block b = p.getTargetBlock(null, 8);
+
+								final Location l = b.getLocation();
+								if (!b.getType().isTransparent() && !rune.containsKey(l)) {
+									rune.put(l, new BukkitRunnable() {
+										public void run() {
+											s.onRuneUpdate(p, l);
+											boolean hit = false;
+											for (Entity e : l.getWorld().getEntities()) {
+												if (!(e instanceof LivingEntity))
+													continue;
+
+												LivingEntity le = (LivingEntity) e;
+												if (le != p && le.getLocation().distance(l) <= 4) {
+													if (!hit) {
+														s.onRuneExplode(p, l);
+														hit = true;
+													}
+													s.onRuneHitEntity(p, le);
+													rune.get(l).cancel();
+													rune.remove(l);
+												}
+											}
+										}
+									}.runTaskTimer(SpellsSkyrim.ins, 0, 10));
+								} else
+									p.sendMessage("§cCould not place rune at target");
+							} else if (s.type == SpellType.Cloak) {
+								if (cloak.containsKey(p)) {
+									cloak.get(p).cancel();
+									cloak.remove(p);
+								}
+								if (cloakDis.containsKey(p)) {
+									cloakDis.get(p).cancel();
+									cloakDis.remove(p);
+								}
+								cloak.put(p, new BukkitRunnable() {
+									public void run() {
+										s.onCloakUpdate(p);
+									}
+								}.runTaskTimer(SpellsSkyrim.ins, 0, 5));
+								cloakDis.put(p, Bukkit.getScheduler().runTaskLater(SpellsSkyrim.ins, new Runnable() {
+									public void run() {
+										s.onCloakDissipate(p);
+										cloak.get(p).cancel();
+										cloak.remove(p);
+									}
+								}, s.duration));
+							} else if (s.type == SpellType.Self) {
+								s.castAtTarget(p, p);
 							}
-						}.runTaskTimer(SpellsSkyrim.ins, 0, 5));
-						cloakDis.put(p, Bukkit.getScheduler().runTaskLater(SpellsSkyrim.ins, new Runnable() {
-							public void run() {
-								s2.onCloakDissipate(p);
-								cloak.get(p).cancel();
-								cloak.remove(p);
-							}
-						}, s.duration));
-					}
+						}
+					}, s.castTime);
 				}
 			}
 		}

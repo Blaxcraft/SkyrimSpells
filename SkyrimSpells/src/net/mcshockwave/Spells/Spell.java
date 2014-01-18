@@ -13,6 +13,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -179,7 +180,7 @@ public enum Spell {
 		SpellSchool.Destruction),
 	Wall_of_Flames(
 		SpellType.Spray,
-		10,
+		0,
 		200,
 		Material.INK_SACK,
 		1,
@@ -187,7 +188,7 @@ public enum Spell {
 		SpellSchool.Destruction),
 	Wall_of_Frost(
 		SpellType.Spray,
-		10,
+		0,
 		200,
 		Material.INK_SACK,
 		12,
@@ -195,17 +196,41 @@ public enum Spell {
 		SpellSchool.Destruction),
 	Wall_of_Storms(
 		SpellType.Spray,
-		10,
+		0,
 		200,
 		Material.INK_SACK,
 		6,
 		SpellDifficulty.Expert,
+		SpellSchool.Destruction),
+	// Master
+	// Destruction
+	Blizzard(
+		SpellType.Self,
+		100,
+		400,
+		Material.INK_SACK,
+		12,
+		SpellDifficulty.Master,
+		SpellSchool.Destruction),
+	Fire_Storm(
+		SpellType.Self,
+		100,
+		Material.INK_SACK,
+		1,
+		SpellDifficulty.Master,
+		SpellSchool.Destruction),
+	Lightning_Storm(
+		SpellType.Spray,
+		0,
+		Material.INK_SACK,
+		6,
+		SpellDifficulty.Master,
 		SpellSchool.Destruction);
 
 	public SpellType		type;
 	public ItemStack		item;
 	public String			name;
-	public int				duration	= 0;
+	public int				duration	= 0, castTime;
 	public SpellDifficulty	dif;
 	public SpellSchool		sch;
 
@@ -217,6 +242,7 @@ public enum Spell {
 				"", "School: " + sch.name(), "Skill Level: " + dif.name());
 		this.dif = dif;
 		this.sch = sch;
+		this.castTime = castTime;
 	}
 
 	Spell(SpellType type, int castTime, Material t, int data, SpellDifficulty dif, SpellSchool sch) {
@@ -226,6 +252,7 @@ public enum Spell {
 				"", "School: " + sch.name(), "Skill Level: " + dif.name());
 		this.dif = dif;
 		this.sch = sch;
+		this.castTime = castTime;
 	}
 
 	public static enum SpellType {
@@ -565,6 +592,24 @@ public enum Spell {
 		if (this == Thunderbolt) {
 			fireParProjectile(p, ParticleEffect.WITCH_MAGIC, s, v, 0.01f);
 		}
+		
+		// Master
+		
+		if (this == Lightning_Storm) {
+			List<Entity> es = p.getNearbyEntities(50, 50, 50);
+			Location[] cast = rayCast(s, v, 200);
+			
+			for (Location l : cast) {
+				PacketUtils.playParticleEffect(ParticleEffect.WITCH_MAGIC, l, 0.3f, 0.05f, 3);
+				for (Entity e : es) {
+					if (e instanceof LivingEntity && e.getLocation().distance(l) < 2) {
+						LivingEntity le = (LivingEntity) e;
+						// TODO make this drain magicka
+						le.damage(3);
+					}
+				}
+			}
+		}
 
 	}
 
@@ -575,7 +620,7 @@ public enum Spell {
 				PacketUtils.playParticleEffect(pe, l, 0.3f, 0.1f, 1);
 		}
 		final Location t = cast[cast.length - 1];
-		if (t.getBlock().getType().isTransparent())
+		if (t.getBlock().getRelative(BlockFace.DOWN).getType().isTransparent())
 			return;
 		final Location tu1 = t.clone().add(0, 1, 0);
 		final Location tu2 = t.clone().add(0, 2, 0);
@@ -611,8 +656,38 @@ public enum Spell {
 		}
 	}
 
-	public void castAtTarget(Player p, LivingEntity targ) {
+	public void castAtTarget(final Player p, LivingEntity targ) {
+		if (this == Blizzard) {
+			for (int i = 0; i < duration / 5; i++) {
+				new BukkitRunnable() {
+					public void run() {
+						for (Entity e : p.getNearbyEntities(10, 10, 10)) {
+							if (e instanceof LivingEntity) {
+								LivingEntity le = (LivingEntity) e;
 
+								le.damage(3, p);
+								le.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 3));
+							}
+						}
+						PacketUtils.playParticleEffect(ParticleEffect.INSTANT_SPELL, p.getEyeLocation(), 5, 0.3f, 1000);
+					}
+				}.runTaskLater(SpellsSkyrim.ins, i * 5);
+			}
+		}
+		if (this == Fire_Storm) {
+			PacketUtils.playParticleEffect(ParticleEffect.FLAME, p.getLocation(), 0, 1, 500);
+			PacketUtils.playParticleEffect(ParticleEffect.FLAME, p.getLocation(), 0, 0.75f, 250);
+			PacketUtils.playParticleEffect(ParticleEffect.FLAME, p.getLocation(), 0, 0.5f, 100);
+			p.getWorld().playSound(p.getLocation(), Sound.EXPLODE, 2, 0);
+			for (Entity e : p.getNearbyEntities(10, 10, 10)) {
+				if (e instanceof LivingEntity) {
+					LivingEntity le = (LivingEntity) e;
+
+					le.damage(15, p);
+					le.setFireTicks(800);
+				}
+			}
+		}
 	}
 
 	public void onRuneExplode(Player p, Location l) {
