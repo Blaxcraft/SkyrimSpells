@@ -7,6 +7,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 
 public class SpellsCommand implements CommandExecutor {
 
@@ -17,24 +18,38 @@ public class SpellsCommand implements CommandExecutor {
 			return false;
 		}
 
-		if (args.length > 2) {
+		if (args.length > 0) {
 			String cm = args[0];
-			String pl = args[1];
-			String sp = args[2];
 
-			if (cm.equalsIgnoreCase("give")) {
-				Player p = Bukkit.getPlayer(pl);
-
-				Spell s = null;
-				for (Spell s2 : Spell.values()) {
-					if (s2.name().equalsIgnoreCase(sp)) {
-						s = s2;
-					}
+			if (cm.equalsIgnoreCase("listall") && sender instanceof Player) {
+				Spell[] sps = Spell.values();
+				
+				Inventory i = Bukkit.createInventory(null, (sps.length + 8) / 9 * 9, "All Spells");
+				
+				for (Spell s : sps) {
+					i.addItem(s.item);
 				}
-				if (s == null)
-					return false;
+				
+				((Player) sender).openInventory(i);
+			}
+			if (args.length > 2) {
+				String pl = args[1];
+				String sp = args[2];
 
-				p.getInventory().addItem(s.item);
+				if (cm.equalsIgnoreCase("give")) {
+					Player p = Bukkit.getPlayer(pl);
+
+					Spell s = null;
+					for (Spell s2 : Spell.values()) {
+						if (s2.name().equalsIgnoreCase(sp)) {
+							s = s2;
+						}
+					}
+					if (s == null)
+						return false;
+
+					p.getInventory().addItem(s.item);
+				}
 			}
 		}
 
