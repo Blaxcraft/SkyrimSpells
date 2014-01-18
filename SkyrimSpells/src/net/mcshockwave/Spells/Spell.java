@@ -30,28 +30,38 @@ public enum Spell {
 		SpellType.Spray,
 		0,
 		Material.INK_SACK,
-		1),
+		1,
+		SpellDifficulty.Novice,
+		SpellSchool.Destruction),
 	Frostbite(
 		SpellType.Spray,
 		0,
 		Material.INK_SACK,
-		12),
+		12,
+		SpellDifficulty.Novice,
+		SpellSchool.Destruction),
 	Sparks(
 		SpellType.Spray,
 		0,
 		Material.INK_SACK,
-		6),
+		6,
+		SpellDifficulty.Novice,
+		SpellSchool.Destruction),
 	// Restoration
 	Healing(
 		SpellType.Spray,
 		0,
 		Material.INK_SACK,
-		11),
+		11,
+		SpellDifficulty.Novice,
+		SpellSchool.Restoration),
 	Lesser_Ward(
 		SpellType.Spray,
 		0,
 		Material.INK_SACK,
-		13),
+		13,
+		SpellDifficulty.Novice,
+		SpellSchool.Restoration),
 
 	// Apprentice
 	// Destruction
@@ -59,84 +69,163 @@ public enum Spell {
 		SpellType.Bolt,
 		20,
 		Material.INK_SACK,
-		1),
+		1,
+		SpellDifficulty.Apprentice,
+		SpellSchool.Destruction),
 	Ice_Spike(
 		SpellType.Bolt,
 		20,
 		Material.INK_SACK,
-		12),
+		12,
+		SpellDifficulty.Apprentice,
+		SpellSchool.Destruction),
 	Lightning_Bolt(
 		SpellType.Bolt,
 		20,
 		Material.INK_SACK,
-		6),
+		6,
+		SpellDifficulty.Apprentice,
+		SpellSchool.Destruction),
 	Fire_Rune(
 		SpellType.Rune,
 		20,
 		Material.INK_SACK,
-		1),
+		1,
+		SpellDifficulty.Apprentice,
+		SpellSchool.Destruction),
 	Frost_Rune(
 		SpellType.Rune,
 		20,
 		Material.INK_SACK,
-		12),
+		12,
+		SpellDifficulty.Apprentice,
+		SpellSchool.Destruction),
 	Lightning_Rune(
 		SpellType.Rune,
 		20,
 		Material.INK_SACK,
-		6),
+		6,
+		SpellDifficulty.Apprentice,
+		SpellSchool.Destruction),
 	// Adept
 	// Destruction
 	Chain_Lightning(
 		SpellType.Bolt,
 		30,
 		Material.INK_SACK,
-		6),
+		6,
+		SpellDifficulty.Adept,
+		SpellSchool.Destruction),
 	Fireball(
 		SpellType.Bolt,
 		30,
 		Material.INK_SACK,
-		1),
+		1,
+		SpellDifficulty.Adept,
+		SpellSchool.Destruction),
 	Ice_Storm(
 		SpellType.Bolt,
 		30,
 		Material.INK_SACK,
-		12),
+		12,
+		SpellDifficulty.Adept,
+		SpellSchool.Destruction),
 	Flame_Cloak(
 		SpellType.Cloak,
 		40,
 		1200,
 		Material.INK_SACK,
-		1),
+		1,
+		SpellDifficulty.Adept,
+		SpellSchool.Destruction),
 	Frost_Cloak(
 		SpellType.Cloak,
 		40,
 		1200,
 		Material.INK_SACK,
-		12),
+		12,
+		SpellDifficulty.Adept,
+		SpellSchool.Destruction),
 	Lightning_Cloak(
 		SpellType.Cloak,
 		40,
 		1200,
 		Material.INK_SACK,
-		6);
+		6,
+		SpellDifficulty.Adept,
+		SpellSchool.Destruction),
+	// Expert
+	// Destruction
+	Icy_Spear(
+		SpellType.Bolt,
+		30,
+		Material.INK_SACK,
+		12,
+		SpellDifficulty.Expert,
+		SpellSchool.Destruction),
+	Incinerate(
+		SpellType.Bolt,
+		30,
+		Material.INK_SACK,
+		1,
+		SpellDifficulty.Expert,
+		SpellSchool.Destruction),
+	Thunderbolt(
+		SpellType.Bolt,
+		30,
+		Material.INK_SACK,
+		6,
+		SpellDifficulty.Expert,
+		SpellSchool.Destruction),
+	Wall_of_Flames(
+		SpellType.Spray,
+		10,
+		200,
+		Material.INK_SACK,
+		1,
+		SpellDifficulty.Expert,
+		SpellSchool.Destruction),
+	Wall_of_Frost(
+		SpellType.Spray,
+		10,
+		200,
+		Material.INK_SACK,
+		12,
+		SpellDifficulty.Expert,
+		SpellSchool.Destruction),
+	Wall_of_Storms(
+		SpellType.Spray,
+		10,
+		200,
+		Material.INK_SACK,
+		6,
+		SpellDifficulty.Expert,
+		SpellSchool.Destruction);
 
-	public SpellType	type;
-	public ItemStack	item;
-	public String		name;
-	public int			duration	= 0;
+	public SpellType		type;
+	public ItemStack		item;
+	public String			name;
+	public int				duration	= 0;
+	public SpellDifficulty	dif;
+	public SpellSchool		sch;
 
-	Spell(SpellType type, int castTime, int duration, Material t, int data) {
+	Spell(SpellType type, int castTime, int duration, Material t, int data, SpellDifficulty dif, SpellSchool sch) {
 		this.name = name().replace('_', ' ');
 		this.type = type;
 		this.duration = duration;
-		this.item = ItemMetaUtils.setItemName(new ItemStack(t, 1, (short) data), "§r" + name);
+		this.item = ItemMetaUtils.setLore(ItemMetaUtils.setItemName(new ItemStack(t, 1, (short) data), "§r" + name),
+				"", "School: " + sch.name(), "Skill Level: " + dif.name());
+		this.dif = dif;
+		this.sch = sch;
 	}
 
-	Spell(SpellType type, int castTime, Material t, int data) {
+	Spell(SpellType type, int castTime, Material t, int data, SpellDifficulty dif, SpellSchool sch) {
 		this.name = name().replace('_', ' ');
 		this.type = type;
-		this.item = ItemMetaUtils.setItemName(new ItemStack(t, 1, (short) data), "§r" + name);
+		this.item = ItemMetaUtils.setLore(ItemMetaUtils.setItemName(new ItemStack(t, 1, (short) data), "§r" + name),
+				"", "School: " + sch.name(), "Skill Level: " + dif.name());
+		this.dif = dif;
+		this.sch = sch;
 	}
 
 	public static enum SpellType {
@@ -146,6 +235,22 @@ public enum Spell {
 		Rune,
 		Target,
 		Cloak;
+	}
+
+	public static enum SpellDifficulty {
+		Novice,
+		Apprentice,
+		Adept,
+		Expert,
+		Master;
+	}
+
+	public static enum SpellSchool {
+		Alteration,
+		Conjuration,
+		Destruction,
+		Illusion,
+		Restoration;
 	}
 
 	public void fireParProjectile(final Player la, final ParticleEffect pe, Location s, Vector v, float speed) {
@@ -277,6 +382,47 @@ public enum Spell {
 				}
 			}
 		}
+
+		if (this == Incinerate) {
+			PacketUtils.playParticleEffect(ParticleEffect.EXPLODE, l, 0, 0.3f, 100);
+			l.getWorld().playSound(l, Sound.EXPLODE, 2, 1);
+			for (Entity e : l.getWorld().getEntities()) {
+				if (!(e instanceof LivingEntity))
+					continue;
+
+				LivingEntity le = (LivingEntity) e;
+				if (le != la && le.getLocation().distance(l) <= 8) {
+					le.setFireTicks(400);
+					le.damage(9, la);
+				}
+			}
+		}
+		if (this == Icy_Spear) {
+			l.getWorld().playSound(l, Sound.GLASS, 2, 1);
+			for (Entity e : l.getWorld().getEntities()) {
+				if (!(e instanceof LivingEntity))
+					continue;
+
+				LivingEntity le = (LivingEntity) e;
+				if (le != la && le.getLocation().distance(l) <= 8) {
+					le.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 500, 2));
+					le.damage(9, la);
+				}
+			}
+		}
+		if (this == Thunderbolt) {
+			l.getWorld().strikeLightningEffect(l);
+			for (Entity e : l.getWorld().getEntities()) {
+				if (!(e instanceof LivingEntity))
+					continue;
+
+				LivingEntity le = (LivingEntity) e;
+				if (le != la && le.getLocation().distance(l) <= 8) {
+					// TODO damage magicka
+					le.damage(9, la);
+				}
+			}
+		}
 	}
 
 	public Location[] rayCast(Location start, Vector vec, int distance) {
@@ -295,7 +441,7 @@ public enum Spell {
 		return cast.toArray(new Location[0]);
 	}
 
-	public void cast(Player p) {
+	public void cast(final Player p) {
 		Vector v = p.getLocation().getDirection();
 		Location s = p.getEyeLocation().add(p.getLocation().getDirection());
 
@@ -346,6 +492,17 @@ public enum Spell {
 					}
 				}
 			}
+
+			// Wall
+			if (this == Wall_of_Flames) {
+				createWall(cast, p, ParticleEffect.FLAME);
+			}
+			if (this == Wall_of_Storms) {
+				createWall(cast, p, ParticleEffect.WITCH_MAGIC);
+			}
+			if (this == Wall_of_Frost) {
+				createWall(cast, p, ParticleEffect.INSTANT_SPELL);
+			}
 		}
 
 		if (this == Healing) {
@@ -395,6 +552,63 @@ public enum Spell {
 			}
 		}
 
+		// Expert
+
+		if (this == Incinerate) {
+			fireParProjectile(p, ParticleEffect.FLAME, s, v, 0.2f);
+		}
+
+		if (this == Icy_Spear) {
+			fireParProjectile(p, ParticleEffect.INSTANT_SPELL, s, v, 0.15f);
+		}
+
+		if (this == Thunderbolt) {
+			fireParProjectile(p, ParticleEffect.WITCH_MAGIC, s, v, 0.01f);
+		}
+
+	}
+
+	public void createWall(Location[] cast, final Player p, final ParticleEffect pe) {
+		Random rand = new Random();
+		for (Location l : cast) {
+			if (rand.nextBoolean())
+				PacketUtils.playParticleEffect(pe, l, 0.3f, 0.1f, 1);
+		}
+		final Location t = cast[cast.length - 1];
+		if (t.getBlock().getType().isTransparent())
+			return;
+		final Location tu1 = t.clone().add(0, 1, 0);
+		final Location tu2 = t.clone().add(0, 2, 0);
+
+		final Spell th = this;
+		for (int i = 0; i < duration / 5; i++) {
+			new BukkitRunnable() {
+				public void run() {
+					PacketUtils.playParticleEffect(pe, t, 0.2f, 0.05f, 2);
+					PacketUtils.playParticleEffect(pe, tu1, 0.2f, 0.05f, 2);
+					PacketUtils.playParticleEffect(pe, tu2, 0.2f, 0.05f, 2);
+
+					for (Entity e : t.getWorld().getEntities()) {
+						if (!(e instanceof LivingEntity))
+							continue;
+
+						LivingEntity le = (LivingEntity) e;
+						if (le != p && le.getLocation().distance(t) <= 1.5) {
+							if (th == Wall_of_Storms) {
+								le.damage(2, p);
+								// TODO damage magicka
+							} else if (th == Wall_of_Flames) {
+								le.setFireTicks(100);
+								le.damage(2, p);
+							} else if (th == Wall_of_Frost) {
+								le.damage(2, p);
+								le.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 2));
+							}
+						}
+					}
+				}
+			}.runTaskLater(SpellsSkyrim.ins, i * 5);
+		}
 	}
 
 	public void castAtTarget(Player p, LivingEntity targ) {
@@ -444,7 +658,7 @@ public enum Spell {
 	public void onCloakUpdate(Player p) {
 		if (this == Flame_Cloak) {
 			PacketUtils.playParticleEffect(ParticleEffect.FLAME, p.getEyeLocation(), 0.7f, 0.05f, 25);
-			for (Entity e : p.getNearbyEntities(5, 5, 5)) {
+			for (Entity e : p.getNearbyEntities(3, 3, 3)) {
 				if (e instanceof LivingEntity) {
 					LivingEntity le = (LivingEntity) e;
 
@@ -455,7 +669,7 @@ public enum Spell {
 		}
 		if (this == Frost_Cloak) {
 			PacketUtils.playParticleEffect(ParticleEffect.INSTANT_SPELL, p.getEyeLocation(), 0.7f, 0.05f, 25);
-			for (Entity e : p.getNearbyEntities(5, 5, 5)) {
+			for (Entity e : p.getNearbyEntities(3, 3, 3)) {
 				if (e instanceof LivingEntity) {
 					LivingEntity le = (LivingEntity) e;
 
@@ -466,7 +680,7 @@ public enum Spell {
 		}
 		if (this == Lightning_Cloak) {
 			PacketUtils.playParticleEffect(ParticleEffect.WITCH_MAGIC, p.getEyeLocation(), 0.7f, 0.05f, 25);
-			for (Entity e : p.getNearbyEntities(5, 5, 5)) {
+			for (Entity e : p.getNearbyEntities(3, 3, 3)) {
 				if (e instanceof LivingEntity) {
 					LivingEntity le = (LivingEntity) e;
 

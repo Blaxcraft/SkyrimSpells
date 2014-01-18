@@ -23,7 +23,7 @@ public class ItemMetaUtils {
 		ItemMeta m = it.getItemMeta();
 		ArrayList<String> s = new ArrayList<String>();
 		for (String l : lore) {
-			s.add(l);
+			s.add("§7" + l);
 		}
 		m.setLore(s);
 		it.setItemMeta(m);
