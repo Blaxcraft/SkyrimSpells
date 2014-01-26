@@ -108,6 +108,21 @@ public enum Spell {
 		6,
 		SpellDifficulty.Apprentice,
 		SpellSchool.Destruction),
+	// Restoration
+	Fast_Healing(
+		SpellType.Self,
+		10,
+		Material.INK_SACK,
+		11,
+		SpellDifficulty.Apprentice,
+		SpellSchool.Restoration),
+	Healing_Hands(
+		SpellType.Spray,
+		0,
+		Material.INK_SACK,
+		11,
+		SpellDifficulty.Apprentice,
+		SpellSchool.Restoration),
 	// Adept
 	// Destruction
 	Chain_Lightning(
@@ -520,6 +535,26 @@ public enum Spell {
 				}
 			}
 
+			// Healing Hands
+			if (this == Healing_Hands) {
+				Random rand = new Random();
+				for (Location l : cast) {
+					if (rand.nextInt(5) == 0)
+						PacketUtils.playParticleEffect(ParticleEffect.HEART, l, 0.3f, 0.05f, 1);
+					for (Entity e : es) {
+						if (e instanceof LivingEntity && e.getLocation().distance(l) < 2) {
+							LivingEntity le = (LivingEntity) e;
+							double health = le.getHealth();
+							health += 0.5;
+							if (health > 20) {
+								health = 20;
+							}
+							le.setHealth(health);
+						}
+					}
+				}
+			}
+
 			// Wall
 			if (this == Wall_of_Flames) {
 				createWall(cast, p, ParticleEffect.FLAME);
@@ -592,13 +627,13 @@ public enum Spell {
 		if (this == Thunderbolt) {
 			fireParProjectile(p, ParticleEffect.WITCH_MAGIC, s, v, 0.01f);
 		}
-		
+
 		// Master
-		
+
 		if (this == Lightning_Storm) {
 			List<Entity> es = p.getNearbyEntities(50, 50, 50);
 			Location[] cast = rayCast(s, v, 200);
-			
+
 			for (Location l : cast) {
 				PacketUtils.playParticleEffect(ParticleEffect.WITCH_MAGIC, l, 0.3f, 0.05f, 3);
 				for (Entity e : es) {
@@ -687,6 +722,16 @@ public enum Spell {
 					le.setFireTicks(800);
 				}
 			}
+		}
+
+		if (this == Fast_Healing) {
+			double health = p.getHealth();
+			health += 8;
+			if (health > 20) {
+				health = 20;
+			}
+			p.setHealth(health);
+			PacketUtils.playParticleEffect(ParticleEffect.HEART, p.getEyeLocation(), 1, 0, 1);
 		}
 	}
 

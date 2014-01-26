@@ -31,10 +31,10 @@ public class DefaultListener implements Listener {
 		ItemStack it = event.getItem();
 
 		if (a.name().contains("RIGHT_CLICK")) {
-			event.setCancelled(true);
-
 			for (Spell s2 : Spell.values()) {
 				if (s2.item.isSimilar(it)) {
+					event.setCancelled(true);
+
 					final Spell s = s2;
 					Bukkit.getScheduler().runTaskLater(SpellsSkyrim.ins, new Runnable() {
 						public void run() {
