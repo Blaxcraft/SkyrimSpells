@@ -1,9 +1,5 @@
 package net.mcshockwave.Spells;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 import net.mcshockwave.Spells.Utils.ItemMetaUtils;
 import net.mcshockwave.Spells.Utils.LocUtils;
 import net.mcshockwave.Spells.Utils.PacketUtils;
@@ -22,6 +18,10 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public enum Spell {
 
@@ -123,6 +123,13 @@ public enum Spell {
 		11,
 		SpellDifficulty.Apprentice,
 		SpellSchool.Restoration),
+	Steadfast_Ward(
+		SpellType.Spray,
+		0,
+		Material.INK_SACK,
+		13,
+		SpellDifficulty.Apprentice,
+		SpellSchool.Restoration),
 	// Adept
 	// Destruction
 	Chain_Lightning(
@@ -170,6 +177,28 @@ public enum Spell {
 		6,
 		SpellDifficulty.Adept,
 		SpellSchool.Destruction),
+	// Restoration
+	Close_Wounds(
+		SpellType.Self,
+		10,
+		Material.INK_SACK,
+		11,
+		SpellDifficulty.Adept,
+		SpellSchool.Restoration),
+	Heal_Other(
+		SpellType.Spray,
+		0,
+		Material.INK_SACK,
+		11,
+		SpellDifficulty.Adept,
+		SpellSchool.Restoration),
+	Greater_Ward(
+		SpellType.Spray,
+		0,
+		Material.INK_SACK,
+		13,
+		SpellDifficulty.Adept,
+		SpellSchool.Restoration),
 	// Expert
 	// Destruction
 	Icy_Spear(
@@ -217,6 +246,14 @@ public enum Spell {
 		6,
 		SpellDifficulty.Expert,
 		SpellSchool.Destruction),
+	// Restoration
+	Grand_Healing(
+		SpellType.Self,
+		10,
+		Material.INK_SACK,
+		11,
+		SpellDifficulty.Expert,
+		SpellSchool.Restoration),
 	// Master
 	// Destruction
 	Blizzard(
@@ -240,7 +277,16 @@ public enum Spell {
 		Material.INK_SACK,
 		6,
 		SpellDifficulty.Master,
-		SpellSchool.Destruction);
+		SpellSchool.Destruction),
+	// Restoration
+	Guardian_Circle(
+		SpellType.Self,
+		100,
+		1200,
+		Material.INK_SACK,
+		11,
+		SpellDifficulty.Master,
+		SpellSchool.Restoration);
 
 	public SpellType		type;
 	public ItemStack		item;
@@ -555,6 +601,26 @@ public enum Spell {
 				}
 			}
 
+			// Heal Other
+			if (this == Heal_Other) {
+				Random rand = new Random();
+				for (Location l : cast) {
+					if (rand.nextInt(5) == 0)
+						PacketUtils.playParticleEffect(ParticleEffect.HEART, l, 0.3f, 0.05f, 1);
+					for (Entity e : es) {
+						if (e instanceof LivingEntity && e.getLocation().distance(l) < 2) {
+							LivingEntity le = (LivingEntity) e;
+							double health = le.getHealth();
+							health += 0.7;
+							if (health > 20) {
+								health = 20;
+							}
+							le.setHealth(health);
+						}
+					}
+				}
+			}
+
 			// Wall
 			if (this == Wall_of_Flames) {
 				createWall(cast, p, ParticleEffect.FLAME);
@@ -591,6 +657,11 @@ public enum Spell {
 			fireParProjectile(p, ParticleEffect.WITCH_MAGIC, s, v, 0.01f);
 		}
 
+		if (this == Steadfast_Ward) {
+			p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 2));
+			PacketUtils.playParticleEffect(ParticleEffect.MAGIC_CRIT, p.getEyeLocation().add(v), 1, 0, 12);
+		}
+
 		// Adept
 
 		if (this == Chain_Lightning) {
@@ -614,6 +685,11 @@ public enum Spell {
 			}
 		}
 
+		if (this == Greater_Ward) {
+			p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 3));
+			PacketUtils.playParticleEffect(ParticleEffect.MAGIC_CRIT, p.getEyeLocation().add(v), 1, 0, 15);
+		}
+
 		// Expert
 
 		if (this == Incinerate) {
@@ -632,7 +708,7 @@ public enum Spell {
 
 		if (this == Lightning_Storm) {
 			List<Entity> es = p.getNearbyEntities(50, 50, 50);
-			Location[] cast = rayCast(s, v, 200);
+			Location[] cast = rayCast(s, v, 100);
 
 			for (Location l : cast) {
 				PacketUtils.playParticleEffect(ParticleEffect.WITCH_MAGIC, l, 0.3f, 0.05f, 3);
@@ -640,7 +716,7 @@ public enum Spell {
 					if (e instanceof LivingEntity && e.getLocation().distance(l) < 2) {
 						LivingEntity le = (LivingEntity) e;
 						// TODO make this drain magicka
-						le.damage(3);
+						le.damage(3, p);
 					}
 				}
 			}
@@ -693,26 +769,57 @@ public enum Spell {
 
 	public void castAtTarget(final Player p, LivingEntity targ) {
 		if (this == Blizzard) {
-			for (int i = 0; i < duration / 5; i++) {
+			final Location l = p.getEyeLocation();
+			final List<VortexBlock> sand = new ArrayList<>();
+			Random rand = new Random();
+
+			for (int i = 0; i < 50; i++) {
+				int dy = rand.nextInt(3);
+				VortexBlock v = new VortexBlock(p.getWorld().spawnFallingBlock(l.clone().add(0, dy, 0),
+						Material.PACKED_ICE, (byte) 0));
+				sand.add(v);
+			}
+
+			for (int i = 0; i < duration; i++) {
 				new BukkitRunnable() {
 					public void run() {
-						for (Entity e : p.getNearbyEntities(10, 10, 10)) {
-							if (e instanceof LivingEntity) {
-								LivingEntity le = (LivingEntity) e;
 
-								le.damage(3, p);
-								le.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 3));
+						for (VortexBlock vb : sand) {
+							for (Entity e : vb.entity.getNearbyEntities(3, 3, 3)) {
+								if (e instanceof LivingEntity && e != p) {
+									LivingEntity le = (LivingEntity) e;
+
+									le.damage(3, p);
+									le.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 3));
+								}
 							}
+
+							vb.tick();
+
+							PacketUtils.playParticleEffect(ParticleEffect.INSTANT_SPELL, vb.entity.getLocation(), 0,
+									0.5f, 1);
 						}
-						PacketUtils.playParticleEffect(ParticleEffect.INSTANT_SPELL, p.getEyeLocation(), 5, 0.3f, 1000);
+
+						// PacketUtils.playParticleEffect(ParticleEffect.INSTANT_SPELL,
+						// l, 5, 0.3f, 1000);
 					}
-				}.runTaskLater(SpellsSkyrim.ins, i * 5);
+				}.runTaskLater(SpellsSkyrim.ins, i);
 			}
+
+			new BukkitRunnable() {
+				public void run() {
+					for (VortexBlock v : sand.toArray(new VortexBlock[0])) {
+						v.entity.remove();
+						sand.remove(v);
+					}
+				}
+			}.runTaskLater(SpellsSkyrim.ins, duration);
+
 		}
 		if (this == Fire_Storm) {
-			PacketUtils.playParticleEffect(ParticleEffect.FLAME, p.getLocation(), 0, 1, 500);
+			PacketUtils.playParticleEffect(ParticleEffect.FLAME, p.getLocation(), 0, 1, 100);
 			PacketUtils.playParticleEffect(ParticleEffect.FLAME, p.getLocation(), 0, 0.75f, 250);
-			PacketUtils.playParticleEffect(ParticleEffect.FLAME, p.getLocation(), 0, 0.5f, 100);
+			PacketUtils.playParticleEffect(ParticleEffect.FLAME, p.getLocation(), 0, 0.5f, 500);
 			p.getWorld().playSound(p.getLocation(), Sound.EXPLODE, 2, 0);
 			for (Entity e : p.getNearbyEntities(10, 10, 10)) {
 				if (e instanceof LivingEntity) {
@@ -731,7 +838,51 @@ public enum Spell {
 				health = 20;
 			}
 			p.setHealth(health);
-			PacketUtils.playParticleEffect(ParticleEffect.HEART, p.getEyeLocation(), 1, 0, 1);
+			PacketUtils.playParticleEffect(ParticleEffect.HEART, p.getEyeLocation(), 1, 0, 5);
+		}
+
+		if (this == Close_Wounds) {
+			double health = p.getHealth();
+			health += 10;
+			if (health > 20) {
+				health = 20;
+			}
+			p.setHealth(health);
+			PacketUtils.playParticleEffect(ParticleEffect.HEART, p.getEyeLocation(), 1, 0, 10);
+		}
+
+		if (this == Grand_Healing) {
+			double health = p.getHealth();
+			health += 12;
+			if (health > 20) {
+				health = 20;
+			}
+			p.setHealth(health);
+			PacketUtils.playParticleEffect(ParticleEffect.HEART, p.getEyeLocation(), 1, 0, 15);
+		}
+		
+		if (this == Guardian_Circle) {
+			final Location l = p.getLocation();
+			final ArrayList<Location> ls = LocUtils.circle(p, l, 5, 1, true, false, 0);
+			int id = 0;
+
+			for (int i = 0; i < duration; i++) {
+				final Location x = ls.get(id);
+				new BukkitRunnable() {
+					public void run() {
+						PacketUtils.playParticleEffect(ParticleEffect.HAPPY_VILLAGER, x, 0.3f, 0.3f, 10);
+						
+						if (p.getLocation().getWorld() == l.getWorld() && p.getLocation().distance(l) < 5) {
+							p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 3));
+						}
+					}
+				}.runTaskLater(SpellsSkyrim.ins, i);
+				
+				id++;
+				if (id >= ls.size()) {
+					id = 0;
+				}
+			}
 		}
 	}
 
@@ -782,7 +933,7 @@ public enum Spell {
 				if (e instanceof LivingEntity) {
 					LivingEntity le = (LivingEntity) e;
 
-					le.damage(2);
+					le.damage(2, p);
 					le.setFireTicks(100);
 				}
 			}
@@ -793,7 +944,7 @@ public enum Spell {
 				if (e instanceof LivingEntity) {
 					LivingEntity le = (LivingEntity) e;
 
-					le.damage(2);
+					le.damage(2, p);
 					le.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 1));
 				}
 			}
@@ -804,7 +955,7 @@ public enum Spell {
 				if (e instanceof LivingEntity) {
 					LivingEntity le = (LivingEntity) e;
 
-					le.damage(2);
+					le.damage(2, p);
 					// TODO damage magicka
 				}
 			}
@@ -819,8 +970,19 @@ public enum Spell {
 		if (this == Frost_Cloak) {
 			p.getWorld().playSound(p.getLocation(), Sound.GLASS, 2, 1);
 		}
-		if (this == Lightning_Rune) {
+		if (this == Lightning_Cloak) {
 			p.getWorld().strikeLightningEffect(p.getLocation());
 		}
+	}
+
+	public static Spell[] getSpells(SpellSchool sc) {
+		ArrayList<Spell> ret = new ArrayList<>();
+		for (Spell s : values()) {
+			if (s.sch == sc) {
+				ret.add(s);
+			}
+		}
+
+		return ret.toArray(new Spell[0]);
 	}
 }
