@@ -1,8 +1,10 @@
 package net.mcshockwave.Spells;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import net.mcshockwave.Spells.Spell.SpellType;
+import net.mcshockwave.Spells.Utils.LocUtils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -15,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -24,6 +27,8 @@ public class DefaultListener implements Listener {
 	public HashMap<Location, BukkitTask>	rune		= new HashMap<>();
 	public HashMap<Player, BukkitTask>		cloak		= new HashMap<>();
 	public HashMap<Player, BukkitTask>		cloakDis	= new HashMap<>();
+
+	public ArrayList<Player>				casting		= new ArrayList<>();
 
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
@@ -35,6 +40,13 @@ public class DefaultListener implements Listener {
 			for (Spell s2 : Spell.values()) {
 				if (s2.item.isSimilar(it)) {
 					event.setCancelled(true);
+
+					if (casting.contains(p)) {
+						return;
+					}
+					
+					if (s2.type != SpellType.Spray)
+						casting.add(p);
 
 					final Spell s = s2;
 					Bukkit.getScheduler().runTaskLater(SpellsSkyrim.ins, new Runnable() {
@@ -51,6 +63,7 @@ public class DefaultListener implements Listener {
 								}
 							} else if (s.type == SpellType.Bolt) {
 								s.cast(p);
+								casting.remove(p);
 							} else if (s.type == SpellType.Rune) {
 								@SuppressWarnings("deprecation")
 								Block b = p.getTargetBlock(null, 8);
@@ -80,6 +93,7 @@ public class DefaultListener implements Listener {
 									}.runTaskTimer(SpellsSkyrim.ins, 0, 10));
 								} else
 									p.sendMessage("§cCould not place rune at target");
+								casting.remove(p);
 							} else if (s.type == SpellType.Cloak) {
 								if (cloak.containsKey(p)) {
 									cloak.get(p).cancel();
@@ -101,8 +115,12 @@ public class DefaultListener implements Listener {
 										cloak.remove(p);
 									}
 								}, s.duration));
+
+								casting.remove(p);
 							} else if (s.type == SpellType.Self) {
 								s.castAtTarget(p, p);
+
+								casting.remove(p);
 							}
 						}
 					}, s.castTime);
@@ -110,11 +128,18 @@ public class DefaultListener implements Listener {
 			}
 		}
 	}
-	
+
 	@EventHandler
 	public void onEntityChangeBlock(EntityChangeBlockEvent event) {
 		if (event.getEntity().hasMetadata("vortex")) {
 			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	public void onPlayerMove(PlayerMoveEvent event) {
+		if (casting.contains(event.getPlayer()) && !LocUtils.isSame(event.getTo(), event.getFrom())) {
+			event.setTo(event.getFrom());
 		}
 	}
 

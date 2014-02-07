@@ -49,7 +49,7 @@ public class LocUtils {
 
 	// no idea how this works, no touching
 	// I got this from forums
-	public static ArrayList<Location> circle(Player player, Location loc, double radius, int height, boolean hollow,
+	public static ArrayList<Location> circle(Location loc, double radius, int height, boolean hollow,
 			boolean sphere, int offsetY) {
 		ArrayList<Location> circleblocks = new ArrayList<Location>();
 		double cx = loc.getX();

@@ -547,7 +547,7 @@ public enum Spell {
 						if (e instanceof LivingEntity && e.getLocation().distance(l) < 2) {
 							LivingEntity le = (LivingEntity) e;
 							le.setFireTicks(100);
-							le.damage(1.5);
+							le.damage(1.5, p);
 						}
 					}
 				}
@@ -561,7 +561,7 @@ public enum Spell {
 						if (e instanceof LivingEntity && e.getLocation().distance(l) < 2) {
 							LivingEntity le = (LivingEntity) e;
 							le.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 1));
-							le.damage(1);
+							le.damage(1, p);
 						}
 					}
 				}
@@ -575,7 +575,7 @@ public enum Spell {
 						if (e instanceof LivingEntity && e.getLocation().distance(l) < 2) {
 							LivingEntity le = (LivingEntity) e;
 							// TODO make this drain magicka
-							le.damage(1);
+							le.damage(1, p);
 						}
 					}
 				}
@@ -789,7 +789,7 @@ public enum Spell {
 								if (e instanceof LivingEntity && e != p) {
 									LivingEntity le = (LivingEntity) e;
 
-									le.damage(3, p);
+									le.damage(6, p);
 									le.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 3));
 								}
 							}
@@ -863,7 +863,7 @@ public enum Spell {
 		
 		if (this == Guardian_Circle) {
 			final Location l = p.getLocation();
-			final ArrayList<Location> ls = LocUtils.circle(p, l, 5, 1, true, false, 0);
+			final ArrayList<Location> ls = LocUtils.circle(l, 8, 1, true, false, 1);
 			int id = 0;
 
 			for (int i = 0; i < duration; i++) {
@@ -872,7 +872,7 @@ public enum Spell {
 					public void run() {
 						PacketUtils.playParticleEffect(ParticleEffect.HAPPY_VILLAGER, x, 0.3f, 0.3f, 10);
 						
-						if (p.getLocation().getWorld() == l.getWorld() && p.getLocation().distance(l) < 5) {
+						if (p.getLocation().getWorld() == l.getWorld() && p.getLocation().distance(l) < 8) {
 							p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 3));
 						}
 					}
