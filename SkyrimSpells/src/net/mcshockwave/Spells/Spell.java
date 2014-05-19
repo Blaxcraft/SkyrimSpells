@@ -767,6 +767,7 @@ public enum Spell {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public void castAtTarget(final Player p, LivingEntity targ) {
 		if (this == Blizzard) {
 			final Location l = p.getEyeLocation();
@@ -860,7 +861,7 @@ public enum Spell {
 			p.setHealth(health);
 			PacketUtils.playParticleEffect(ParticleEffect.HEART, p.getEyeLocation(), 1, 0, 15);
 		}
-		
+
 		if (this == Guardian_Circle) {
 			final Location l = p.getLocation();
 			final ArrayList<Location> ls = LocUtils.circle(l, 8, 1, true, false, 1);
@@ -871,13 +872,13 @@ public enum Spell {
 				new BukkitRunnable() {
 					public void run() {
 						PacketUtils.playParticleEffect(ParticleEffect.HAPPY_VILLAGER, x, 0.3f, 0.3f, 10);
-						
+
 						if (p.getLocation().getWorld() == l.getWorld() && p.getLocation().distance(l) < 8) {
 							p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 3));
 						}
 					}
 				}.runTaskLater(SpellsSkyrim.ins, i);
-				
+
 				id++;
 				if (id >= ls.size()) {
 					id = 0;
