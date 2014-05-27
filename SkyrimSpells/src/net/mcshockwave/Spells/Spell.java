@@ -639,7 +639,7 @@ public enum Spell {
 		}
 
 		if (this == Lesser_Ward) {
-			p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 1));
+			p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 0));
 			PacketUtils.playParticleEffect(ParticleEffect.MAGIC_CRIT, p.getEyeLocation().add(v), 1, 0, 8);
 		}
 
@@ -658,7 +658,7 @@ public enum Spell {
 		}
 
 		if (this == Steadfast_Ward) {
-			p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 2));
+			p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 1));
 			PacketUtils.playParticleEffect(ParticleEffect.MAGIC_CRIT, p.getEyeLocation().add(v), 1, 0, 12);
 		}
 
@@ -686,7 +686,7 @@ public enum Spell {
 		}
 
 		if (this == Greater_Ward) {
-			p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 3));
+			p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 2));
 			PacketUtils.playParticleEffect(ParticleEffect.MAGIC_CRIT, p.getEyeLocation().add(v), 1, 0, 15);
 		}
 
